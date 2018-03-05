@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[21]:
-
-
 # Import BeautifulSoup library
 from bs4 import BeautifulSoup
 
@@ -13,16 +7,9 @@ import urllib2
 # Import Pandas
 import pandas as pd
 
-
-# In[22]:
-
-
 date_last_accessed = '2017-02-01'
 
-
-# In[23]:
-
-
+# Define motie headlines function
 def motie_headlines(motie_photo_news_url):
 
     ''' This function takes the url of the MOTIE photo news page and returns a
@@ -57,14 +44,11 @@ def motie_headlines(motie_photo_news_url):
 
     return headlines_urls
 
-
-# In[24]:
-
-
+# Define motie photo news story
 def motie_photo_news_story(story_url):
 
     ''' This function takes a URL of a page from the MOTIE photo news section
-and returns a dataframe containing key information about that story.'''
+    and returns a dataframe containing key information about that story.'''
 
     # Save HTML of MOTIE story
     MOTIE_photo_story = urllib2.urlopen(story_url)
@@ -92,10 +76,6 @@ and returns a dataframe containing key information about that story.'''
 
     return story_dataframe
 
-
-# In[25]:
-
-
 # Define MOTIE photo news URL
 motie_photo_news_url = 'http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_cd_n=1'
 
@@ -119,28 +99,29 @@ stories = stories.reset_index().drop(labels = 'index', axis = 1)
 # Merge headlines dataframe with stories dataframe
 motie_photo_news = pd.merge(stories, motie_photo_news, left_on='URL', right_on='URL')
 
-
-# In[26]:
-
-
+# Create variable that if true if motie news story table fully updated
 fully_updated = date_last_accessed > motie_photo_news['Date'].min()
 
-
-# In[27]:
-
-
+# Save news story with oldest URL as string
 last_url = story_URLs[-1]
+
+# Take news story number from oldest URL
 last_story_number = (story_URLs[-1])[68:71]
 
-
-# In[28]:
-
-
+# create while loop to run if table not fully updated from newest 8 stories
 while fully_updated is False:
-    
-    last_story_number = int(last_story_number) - 1
-    next_story_url = "http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_seq_n={}&bbs_cd_n=1&currentPage=1&search_key_n=&search_val_v=&cate_n=".format(last_story_number)
-    next_story_df = motie_photo_news_story(next_story_url)
-    motie_photo_news = pd.concat([motie_photo_news,next_story_df])
-    fully_updated = date_last_accessed > motie_photo_news['Date'].min()
 
+    # save next news story number
+    last_story_number = int(last_story_number) - 1
+
+    # save url for next news story
+    next_story_url = "http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_seq_n={}&bbs_cd_n=1&currentPage=1&search_key_n=&search_val_v=&cate_n=".format(last_story_number)
+
+    # run motie_photo_news_Story on next news story
+    next_story_df = motie_photo_news_story(next_story_url)
+
+    # add next news story to motie_photo_news
+    motie_photo_news = pd.concat([motie_photo_news,next_story_df])
+
+    # check whether table fully updated yet
+    fully_updated = date_last_accessed > motie_photo_news['Date'].min()
