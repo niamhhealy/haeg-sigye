@@ -42,7 +42,7 @@ def motie_headlines(motie_photo_news_url):
         list_of_links.append(str('http://english.motie.go.kr/en/pc/photonews/'+link['href']))
 
     # Create dictionary of headlines and links
-    dictionary = {'Story title':list_of_headlines, 'Links':list_of_links}
+    dictionary = {'Story title':list_of_headlines, 'URL':list_of_links}
 
     # Create empty dataframe
     headlines_urls = pd.DataFrame(data = dictionary)
@@ -67,9 +67,11 @@ def motie_photo_news_story(story_url):
     story_author = 'Republic of Korea Ministry of Trade, Industry and Energy'
 
     # Create dictionary for story
-    story_dictionary = {'Date':story_date, 'Author':story_author, 'URL':story_url}
+    story_dictionary = {'Headline':story_headline, 'Date':story_date, 'Author':story_author, 'URL':story_url}
 
     # Create dataframe for story
     story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
 
-    return story_dataframe
+    print story_dataframe
+
+motie_photo_news_story('http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_seq_n=671&bbs_cd_n=1&currentPage=1&search_key_n=&search_val_v=&cate_n=')
