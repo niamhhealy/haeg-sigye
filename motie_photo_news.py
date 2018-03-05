@@ -1,16 +1,17 @@
-def motie_photo_news():
+# Import BeautifulSoup library
+from bs4 import BeautifulSoup
 
-    # Import BeautifulSoup library
-    from bs4 import BeautifulSoup
+# Import URL parser library
+import urllib2
 
-    # Import URL parser library
-    import urllib2
+# Import Pandas
+import pandas as pd
 
-    # Import Pandas
-    import pandas as pd
+def motie_headlines(motie_photo_news_url):
 
-    # Save URL of MOTIE website
-    motie_photo_news_url = 'http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_cd_n=1'
+    ''' This function takes the url of the MOTIE photo news page and returns a
+    Pandas dataframe containing the headlines and urls of the stories on the
+    page.'''
 
     # Save HTML of MOTIE URL
     motie_photo_news = urllib2.urlopen(motie_photo_news_url)
@@ -46,6 +47,29 @@ def motie_photo_news():
     # Create empty dataframe
     headlines_urls = pd.DataFrame(data = dictionary)
 
-    return headlines_urls.to_html()
+    return headlines_urls
 
-motie_photo_news()
+def motie_photo_news_story(story_url):
+
+    # Save HTML of MOTIE story
+    MOTIE_photo_story = urllib2.urlopen(story_url)
+
+    # Save soup of MOTIE story
+    soup = BeautifulSoup(MOTIE_photo_story, 'html.parser')
+
+    # Save story headline
+    story_headline = str(soup.find('h3').get_text())
+
+    # Save story date
+    story_date = str(soup.find('span', attrs={'class':'date'}).get_text())
+
+    # Save story author
+    story_author = 'Republic of Korea Ministry of Trade, Industry and Energy'
+
+    # Create dictionary for story
+    story_dictionary = {'Date':story_date, 'Author':story_author, 'URL':story_url}
+
+    # Create dataframe for story
+    story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
+
+    return story_dataframe
