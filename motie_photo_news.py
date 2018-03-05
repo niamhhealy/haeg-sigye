@@ -39,7 +39,7 @@ def motie_headlines(motie_photo_news_url):
     # Save each link in list_of_links
     for link in links:
 
-        list_of_links.append(str('http://english.motie.go.kr/en/pc/photonews/'+link['href']))
+        list_of_links.append(str('http://english.motie.go.kr/en/pc/photonews/bbs/'+link['href']))
 
     # Create dictionary of headlines and links
     dictionary = {'Story title':list_of_headlines, 'URL':list_of_links}
@@ -50,6 +50,9 @@ def motie_headlines(motie_photo_news_url):
     return headlines_urls
 
 def motie_photo_news_story(story_url):
+
+    ''' This function takes a URL of a page from the MOTIE photo news section
+and returns a dataframe containing key information about that story.'''
 
     # Save HTML of MOTIE story
     MOTIE_photo_story = urllib2.urlopen(story_url)
@@ -66,12 +69,36 @@ def motie_photo_news_story(story_url):
     # Save story author
     story_author = 'Republic of Korea Ministry of Trade, Industry and Energy'
 
+    # Save language
+    story_language = 'English'
+
     # Create dictionary for story
-    story_dictionary = {'Headline':story_headline, 'Date':story_date, 'Author':story_author, 'URL':story_url}
+    story_dictionary = {'Headline':story_headline, 'Date':story_date, 'Language': story_language, 'Author':story_author, 'URL':story_url}
 
     # Create dataframe for story
     story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
 
-    print story_dataframe
+    return story_dataframe
 
-motie_photo_news_story('http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_seq_n=671&bbs_cd_n=1&currentPage=1&search_key_n=&search_val_v=&cate_n=')
+# Define MOTIE photo news URL
+motie_photo_news_url = 'http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_cd_n=1'
+
+# Run MOTIE headlines function on URL + save as new dataframe
+motie_photo_news = motie_headlines(motie_photo_news_url)
+
+# Create list of URLs to find more info on
+story_URLs = motie_photo_news['URL'].tolist()
+
+# Create empty dataframe to contain further information
+stories = pd.DataFrame(data = None)
+
+# Create stories dataframe containing more information for each headline page
+for url in story_URLs:
+    story_dataframe = motie_photo_news_story(url)
+    stories = pd.concat([stories, story_dataframe])
+
+# Tidy up stories dataframe
+stories = stories.reset_index().drop(labels = 'index', axis = 1)
+
+# Merge headlines dataframe with stories dataframe
+motie_photo_news = pd.merge(stories, motie_photo_news, left_on='URL', right_on='URL')
