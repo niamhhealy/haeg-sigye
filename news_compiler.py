@@ -108,6 +108,7 @@ def produce_motie_df(date_last_accessed):
 
     return motie_photo_news
 
+# Define NSSCR PR df function
 def produce_ROK_NSSC_PR_df(date_last_accessed):
 
     # Define ROK NSSC press releases URL
@@ -247,6 +248,7 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
 
     return rok_nssc_pr_df
 
+# Define news_df_producer function
 def news_df_producer(date):
 
     '''This function produces an amalgamated news dataframe.'''
