@@ -3,3 +3,6 @@ pandas
 gunicorn
 requests
 request
+urllib2
+bs4
+re
