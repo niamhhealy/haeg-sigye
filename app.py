@@ -2,7 +2,6 @@ from flask import Flask, render_template, redirect, url_for, request
 
 import news_compiler as nc
 import pandas as pd
-import test as test
 
 app = Flask(__name__)
 
