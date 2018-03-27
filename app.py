@@ -22,4 +22,4 @@ def date_accessed():
     return render_template('view.html',table=table)
 
 if __name__ == '__main__':
-    app.run(debug = True,use_reloader=True)
+    app.run(debug = True)
