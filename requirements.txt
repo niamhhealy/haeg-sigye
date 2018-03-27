@@ -1,2 +1,5 @@
-Flask
-Pandas
+flask
+pandas
+gunicorn
+requests
+request
