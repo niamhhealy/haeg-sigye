@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
   </head>
 
+ <!-- jQuery library -->
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+
   <body>
     <!-- Navbar -->
          <div class="row">
@@ -38,9 +41,22 @@
         <h1>Here are the latest stories from the ROK:</h1>
         <ul>
           {% for row_index in range(size) %}
-          <li>{{ data['Date'][row_index] }}: <a href='{{ data['URL'][row_index] }}'> {{ data['Story title'][row_index] }} </a></li>
+          <li>{{ data['Date'][row_index] }}: <a href='{{ data['URL'][row_index] }}' id = '{{row_index}}'> {{ data['Story title'][row_index] }} </a></li>
+          <br><button class="btn" data-clipboard-text="{{ row_index }}">Copy citation to clipboard.</button>
           {% endfor %}
+
         </ul>
+
+        <script>
+var btn = document.getElementById('btn');
+var clipboard = new ClipboardJS(btn);
+clipboard.on('success', function(e) {
+    console.log(e);
+});
+clipboard.on('error', function(e) {
+    console.log(e);
+});
+</script>
     </body>
 <footer>Copyright <a href="/about">Niamh Healy</a> 2018.</footer>
 </html>
