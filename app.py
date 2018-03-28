@@ -5,7 +5,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-@app.route("/access")
+@app.route("/")
 def access():
     return render_template("welcome.html")
 
