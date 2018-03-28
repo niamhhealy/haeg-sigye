@@ -1,5 +1,17 @@
 <!doctype html>
-<title>SK Nuclear News</title>
-  <h1>Here are the latest stories from South Korea:</h1>
-{{ table|safe }}
-</div>
+<html>
+  <head>
+      <title>SK Nuclear News</title>
+      <link rel="stylesheet" type ="text/css" href="../static/css/style.css">
+    </head>
+
+    <body>
+        <h1>Here are the latest stories from South Korea:</h1>
+        <ul>
+          {% for row_index in range(size) %}
+          <li>{{ data['Date'][row_index] }}: <a href='{{ data['URL'][row_index] }}'> {{ data['Story title'][row_index] }} </a></li>
+          {% endfor %}
+        </ul>
+    </body>
+
+</html>

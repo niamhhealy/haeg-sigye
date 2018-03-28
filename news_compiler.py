@@ -251,7 +251,7 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
 # Define news_df_producer function
 def news_df_producer(date):
 
-    '''This function produces an amalgamated news dataframe.'''
+    '''This function produces an amalgamated news dictionary.'''
 
     # Produce NSSC PR df
     ROK_NSSC_PR_df = produce_ROK_NSSC_PR_df(date)
@@ -268,4 +268,7 @@ def news_df_producer(date):
     # Drop old index column
     news_df.drop(columns='index',inplace=True)
 
-    return news_df
+    # Store df as dictionary
+    news_dictionary = news_df.to_dict()
+
+    return news_dictionary

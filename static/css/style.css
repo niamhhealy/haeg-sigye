@@ -1,17 +1,35 @@
-title{
-  display: 'Haeg Sigye'
+* {
+  font-family: 'Arial',sans-serif;
 }
 
 body {
   background-color: #696969;
-  font-family: Arial,sans-serif;
   font-size: 11pt;
   color: #000000
 }
 
 h1 {
-  font-family: Arial,sans-serif;
   font-size: 14pt;
-  colour: Red;
+  color: #000000;
   background-color: #B0E0E6
+}
+
+a:link{
+  color: #FFFFFF;
+  text-decoration:none
+}
+
+a:visited{
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+a:hover{
+  color: #FFFFFF;
+  text-decoration: underline;
+}
+
+a:active{
+  color: #FFFFFF;
+  text-decoration: underline;
 }

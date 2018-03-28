@@ -1,9 +1,16 @@
 <!doctype html>
-<title>haeg sigye</title>
-<h1>Welcome to <i>haeg sigye</i>.</h1>
-<h2>When did you last access the news?</h2>
+<html>
+  <head>
+    <title>SK Nuclear News</title>
+    <link rel="stylesheet" type ="text/css" href="../static/css/style.css">
+  </head>
 
-<form method="post" action="/news">
-<input type="date" name="dateaccessed" required="required">
-<input type="submit" id="submit" value="submit">
-</form>
+  <body>
+    <h1>Welcome to Niamh's South Korean nuclear news hub.</h1>
+    <p>When did you last access the news?</p>
+    <form method="post" action="/news">
+      <input type="date" name="dateaccessed" required="required">
+      <input type="submit" id="submit" value="submit">
+    </form>
+  </body>
+</html>

@@ -14,11 +14,8 @@ def date_accessed():
     form_data = request.form
     date = form_data['dateaccessed']
     data = nc.news_df_producer(date)
-    table = data.to_html()
-    table = table.strip('[u')
-    table = table.strip("']")
-    table = table.strip('\n')
-    return render_template('view.html',table=table)
+    size = len(data['Story title'])
+    return render_template('view.html',data=data,size=size)
 
 if __name__ == '__main__':
     app.run(debug = True)
