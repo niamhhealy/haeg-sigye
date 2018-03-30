@@ -22,9 +22,6 @@ def first_motie_photo_news_story(motie_photo_news_url):
     # Save HTML of MOTIE URL
     motie_photo_news = urllib2.urlopen(motie_photo_news_url)
 
-    # Create empty list of headlines_code
-    list_of_headlines = []
-
     # Save soup of MOTIE photo news page
     soup = BeautifulSoup(motie_photo_news, 'html.parser')
 
@@ -39,7 +36,7 @@ def first_motie_photo_news_story(motie_photo_news_url):
 # Define motie_photo_news_story function
 def motie_photo_news_story(story_url):
 
-    '''# This function takes a URL of a page from the MOTIE photo news section
+    ''' This function takes a URL of a page from the MOTIE photo news section
     and returns a dataframe containing key information about that story.'''
 
     # Save HTML of MOTIE story
@@ -71,7 +68,8 @@ def motie_photo_news_story(story_url):
 # Define produce_motie_df function
 def produce_motie_df(date_last_accessed):
 
-    ''' This function takes the'''
+    ''' This function takes the date the user last accessed the news and returns a dataframe containing
+    all the MOTIE photo news stories since that date. '''
 
     # Define MOTIE photo news URL
     motie_photo_news_url = 'http://english.motie.go.kr/en/pc/photonews/bbs/bbsList.do?bbs_cd_n=1'
@@ -110,6 +108,9 @@ def produce_motie_df(date_last_accessed):
 
 # Define NSSCR PR df function
 def produce_ROK_NSSC_PR_df(date_last_accessed):
+
+    ''' This function takes the date the user last accessed the news and returns a dataframe
+    containing all the stories since this date. '''
 
     # Define ROK NSSC press releases URL
     rok_nssc_url = 'http://www.nssc.go.kr/nssc/english/release/list.jsp'
@@ -248,6 +249,101 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
 
     return rok_nssc_pr_df
 
+# Define first_MOTIE_pr function
+def first_MOTIE_pr(motie_pr_url):
+
+    ''' This function takes the URL of the MOTIE PRs and returns the URL of the most recent
+    PR. '''
+
+    # Save HTML of MOTIE URL
+    motie_photo_news = urllib2.urlopen(motie_pr_url)
+
+    # Save soup of MOTIE photo news page
+    soup = BeautifulSoup(motie_photo_news, 'html.parser')
+
+    # Get first link
+    link = soup.find('dd',attrs={'class':"w100"}).contents[1].contents[0]
+
+    # Create empty list of empty list_of_links
+    url = str('http://english.motie.go.kr/en/pc/pressreleases/bbs/'+link['href'])
+
+    return url
+
+# Define MOTIE PR
+def motie_pr(pr_url):
+
+    ''' This function takes the URL of a MOTIE PR and returns key information about that PR.'''
+
+    # Save HTML of MOTIE story
+    MOTIE_pr = urllib2.urlopen(pr_url)
+
+    # Save soup of MOTIE story
+    soup = BeautifulSoup(MOTIE_pr, 'html.parser')
+
+    # Save story headline
+    story_headline = (soup.find_all('dt'))[5].contents[0]
+
+    # Save story date
+    story_date = (soup.find_all('dt'))[5].contents[1].get_text()
+
+    # Save story author
+    story_author = 'Republic of Korea Ministry of Trade, Industry and Energy'
+
+    # Save language
+    story_language = 'English'
+
+    # Create dictionary for story
+    story_dictionary = {'Story title':story_headline, 'Date':story_date, 'Language': story_language, 'Author':story_author, 'URL':pr_url}
+
+    # Create dataframe for story
+    story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
+
+    return story_dataframe
+
+# Def MOTIE pr function
+def motie_pr_df(date_last_accessed):
+
+    ''' This function takes the date the user last accessed the news and returns a dataframe containing
+    all the MOTIE pr since that date. '''
+
+    # Define MOTIE photo news URL
+    motie_pr_url = 'http://english.motie.go.kr/en/pc/pressreleases/bbs/bbsList.do?bbs_cd_n=2'
+
+    # Run first_MOTIE_pr + save first story url as string
+    first_story_url = first_MOTIE_pr(motie_pr_url)
+
+    # Run motie_photo_news_story on first url
+    motie_pr_data = motie_pr(first_story_url)
+
+    # Create variable that if true if motie news story table fully updated
+    fully_updated = date_last_accessed > motie_pr_data['Date'].min()
+
+    # Take news story number from first story
+    last_story_number = first_story_url[72:75]
+
+    # define problematic story number
+    problematic_story_number = 622
+
+    # create while loop to run if table not fully updated from newest stories
+    while fully_updated is False or last_story_number >= 622:
+
+        # save next news story number
+        last_story_number = int(last_story_number) - 1
+
+        # save url for next news story
+        next_story_url = "http://english.motie.go.kr/en/pc/pressreleases/bbs/bbsView.do?bbs_seq_n={}&bbs_cd_n=2&currentPage=1&search_key_n=&search_val_v=&cate_n=".format(last_story_number)
+
+        # run motie_pr on next news story
+        next_story_df = motie_pr(next_story_url)
+
+        #  add next news story to motie_photo_news
+        motie_pr_data = pd.concat([motie_pr_data,next_story_df])
+
+        # check whether table fully updated yet
+        fully_updated = date_last_accessed > motie_pr_data['Date'].min()
+
+    return motie_pr_data
+
 # Define news_df_producer function
 def news_df_producer(date):
 
@@ -259,14 +355,23 @@ def news_df_producer(date):
     # Produce MOTIE photo news DF
     motie_photo_df = produce_motie_df(date)
 
+    # Produce MOTIE PR DF
+    motie_pr_data = motie_pr_df(date)
+
     # Concatenate DFs
     news_df = pd.concat([ROK_NSSC_PR_df,motie_photo_df])
+
+    # Concatenate more DFs
+    news_df = pd.concat([news_df ,motie_pr_data])
 
     # Reset index
     news_df.reset_index(inplace = True)
 
     # Drop old index column
     news_df.drop(columns='index',inplace=True)
+
+    # Sort DataFrame
+    news_df = news_df.sort_values(by=['Date'])
 
     # Store df as dictionary
     news_dictionary = news_df.to_dict()
