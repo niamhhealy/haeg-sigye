@@ -38,7 +38,9 @@
         <h1>Here are the latest stories from the ROK:</h1>
         <ul>
           {% for row_index in range(size) %}
-          <li>{{ data['Date'][row_index] }}: <a href='{{ data['URL'][row_index] }}' id = '{{row_index}}'> {{ data['Story title'][row_index] }} </a></li>
+          <li>{{ data['Date'][row_index] }}: <a href='{{ data['URL'][row_index] }}' id = '{{row_index}}'> {{ data['Story title'][row_index] }} </a>
+          <br> '{{ data['Story title'][row_index] }}', {{ data['Author'][row_index] }}, {{ data['Date'][row_index] }}, &lt;{{ data['URL'][row_index] }}&gt;.
+            ]}}'</li>
           {% endfor %}
         </ul>
     </body>
