@@ -7,6 +7,9 @@ import urllib2
 # Import Pandas
 import pandas as pd
 
+# Import date time
+from datetime import datetime
+
 # Amend pandas settings
 pd.set_option("display.max_colwidth",1000)
 
@@ -50,6 +53,9 @@ def motie_photo_news_story(story_url):
 
     # Save story date
     story_date = list(soup.find('h3').children)[1].get_text()
+
+    # Save story date as datetime
+    story_date = datetime.strptime(story_date,'%Y-%m-%d')
 
     # Save story author
     story_author = 'Republic of Korea Ministry of Trade, Industry and Energy'
@@ -175,6 +181,7 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
             'Feb':'02',
             'Mar':'03',
             'Apr':'04',
+            'Aor':'04',
             'May':'05',
             'Jun':'06',
             'Jul':'07',
@@ -195,7 +202,10 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
             pr_day = pr_date_untidy[re.search("\d",pr_date_untidy).start():re.search("\d",pr_date_untidy).start()+2]
 
         # Save clean press release date
-        clean_pr_date = '{}-{}-{}'.format(pr_year,pr_month,pr_day)
+        pr_date = '{}-{}-{}'.format(pr_year,pr_month,pr_day)
+
+        # Save pr date as date time object
+        clean_pr_date = datetime.strptime(pr_date,'%Y-%m-%d')
 
         return clean_pr_date
 
@@ -286,6 +296,9 @@ def motie_pr(pr_url):
     # Save story date
     story_date = (soup.find_all('dt'))[5].contents[1].get_text()
 
+    # Save story date as date time object
+    story_date = datetime.strptime(story_date,'%Y-%m-%d')
+
     # Save story author
     story_author = 'Republic of Korea Ministry of Trade, Industry and Energy'
 
@@ -370,10 +383,33 @@ def news_df_producer(date):
     # Drop old index column
     news_df.drop(columns='index',inplace=True)
 
-    # Sort DataFrame
-    news_df = news_df.sort_values(by=['Date'])
+    # Create blank list of rows to drop based on date
+    list_of_rows = []
 
-    # Store df as dictionary
+    # Create list of old stories to drop
+    for row_index in range(len(news_df.index)):
+        if news_df['Date'][row_index] < date:
+            list_of_rows.append(row_index)
+
+    # Drop old stories
+    news_df.drop(labels=list_of_rows, axis = 0, inplace=True)
+
+    # Reset index
+    news_df.reset_index(inplace = True)
+
+    # Drop old index column
+    news_df.drop(columns='index',inplace=True)
+
+    # Sort df
+    news_df.sort_values(by='Date',inplace=True,axis=0)
+
+    # Reset index
+    news_df.reset_index(inplace = True)
+
+    # Drop old index column
+    news_df.drop(columns='index',inplace=True)
+
+    # Store df as news_dictionary
     news_dictionary = news_df.to_dict()
 
     return news_dictionary
