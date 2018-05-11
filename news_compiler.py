@@ -479,6 +479,7 @@ def cheong_wa_dae_briefings(date_last_accessed):
         # Find date
         date = cwdb_soup.find('div',attrs={'class':'view_date_sns'}).p.string
         date = datetime.strptime(date,'%B %d, %Y')
+        print 'Running CWD' + str(date)
 
         # Create dictionary for story
         story_dictionary = {'Story title':title, 'Date':date, 'Language': 'English', 'Author':'Republic of Korea  Cheong Wa Dae', 'URL':url}
@@ -489,14 +490,13 @@ def cheong_wa_dae_briefings(date_last_accessed):
         # Concat
         df = pd.concat([df,story_dataframe])
 
-        # Find next story URL
-        next_url = cwdb_soup.find('ul',attrs={'class':'board_view_list'}).li.a['href']
-
         # Set next url as url
-        url =  'https://english1.president.go.kr' + next_url
+        story_number = int(url[-3:])
+        story_number = story_number - 1
+        url = url[:-3] + str(story_number)
 
         # Check if table fully updated
-        fully_updated = date_last_accessed > df['Date'].min()
+        table_fully_updated = date_last_accessed > df['Date'].min()
 
     return df
 
@@ -511,12 +511,15 @@ def news_df_producer(date):
     # Produce MOTIE photo news DF
     motie_photo_df = produce_motie_df(date)
 
+    print 'motie pr time'
     # Produce MOTIE PR DF
     motie_pr_data = motie_pr_df(date)
 
+    print 'now onto mfa'
     # Produce MFA df
     mfa_df = rok_mfa(date)
 
+    print 'ok starting CWD'
     # Produce CWD-B df
     cwdb_df = cheong_wa_dae_briefings(date)
 
