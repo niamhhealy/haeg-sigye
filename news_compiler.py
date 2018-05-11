@@ -357,6 +357,149 @@ def motie_pr_df(date_last_accessed):
 
     return motie_pr_data
 
+# Define MFA news story function
+def rok_mfa(date_last_accessed):
+
+    ''' This function takes the date the user last accessed the news and returns a dataframe containing
+    all the MFA pr since that date. '''
+
+    # Define URL of MFA
+    mfa_url = 'http://www.mofa.go.kr/eng/brd/m_5676/list.do'
+
+    # Create table_fully_updated variable
+    table_fully_updated = False
+
+    # Save HTML of MFA
+    mfa_pr = urllib2.urlopen(mfa_url)
+
+    # Save soup of MFA story
+    soup = BeautifulSoup(mfa_pr, 'html.parser')
+
+    # Find first news story_url
+    end_of_link =  soup.find('td', attrs={'class':'tal'}).contents[0]['href']
+    first_news_story_url  = 'http://www.mofa.go.kr/eng/brd/m_5676' + end_of_link[1:]
+
+    # Set url as first_news_story_url
+    url = first_news_story_url
+
+    # Create empty news df
+    df = pd.DataFrame(data=None)
+
+    # Create while loop
+    while table_fully_updated is False:
+
+            # Save HTML of MFA
+            news_story = urllib2.urlopen(url)
+
+            # Save soup of MFA story
+            mfa_soup = BeautifulSoup(news_story, 'html.parser')
+
+            # Find title of news story
+            title = mfa_soup.find('title').contents[0]
+            end_of_title = title.find('View|')-1
+            title = title[:end_of_title]
+
+            # Find date of news story
+            string_date =  (mfa_soup.find('em').contents[0])[1:11]
+
+            # Save story date as date time
+            date = datetime.strptime(string_date,'%Y-%m-%d')
+
+            # Set author variable
+            author = 'Republic of Korea Ministry of Foreign Affairs'
+
+            # Set language variable
+            language = 'English'
+
+            # Create dictionary with story info
+            story_data = {'Story title':title, 'Date':date, 'Author':author, 'URL':url, 'Language':language}
+
+            # Create df with story data
+            story_df = pd.DataFrame(data = story_data, index=[0])
+
+            # Concat DFs
+            df = pd.concat([df,story_df])
+
+            # Find new URL link
+            new_url = mfa_soup.find_all('td', attrs={'class':'bro_link'})[1]
+            new_url = str(new_url.contents[0])
+            start_of_url = new_url.find( '"' )
+            end_of_url = new_url.find('"', start_of_url+1)
+            new_url = new_url[start_of_url+2:end_of_url]
+            new_url = 'http://www.mofa.go.kr/eng/brd/m_5676' + new_url
+
+            # Set url as new_url
+            url = new_url
+
+            # Check if df fully updated
+            table_fully_updated = date_last_accessed > df['Date'].min()
+
+    return df
+
+# Define Cheong Wa Dae briefings function
+def cheong_wa_dae_briefings(date_last_accessed):
+    ''' This functio takes the date the user last accessed the news and returns a df containing the latest
+    briefings from the Cheong Wa Dae after that date.'''
+
+    # Set url of briefings page
+    cwdb_url = 'https://english1.president.go.kr/BriefingSpeeches/Briefings'
+
+    # Create table_fully_updated variable
+    table_fully_updated = False
+
+    # Save HTML of CWD-B
+    cwdb_pr = urllib2.urlopen(cwdb_url)
+
+    # Save soup of CWD-B story
+    soup = BeautifulSoup(cwdb_pr, 'html.parser')
+
+    # Find first news story_url
+    link_junk = str(soup.find('div', attrs={'class':'sub_board_title'}).contents[1])
+    start_of_link =  link_junk.find('"')+1
+    end_of_link =  link_junk.find('"',start_of_link)
+    first_story = 'https://english1.president.go.kr' + link_junk[start_of_link:end_of_link]
+
+    # Set url as first story link
+    url = first_story
+
+    # Create empty news df
+    df = pd.DataFrame(data=None)
+
+    while table_fully_updated is False:
+
+        # Save HTML of CWD-B
+        news_story = urllib2.urlopen(url)
+
+        # Save soup of CWD-B
+        cwdb_soup = BeautifulSoup(news_story, 'html.parser')
+
+        # Find title
+        title = cwdb_soup.find('title').contents[0]
+
+        # Find date
+        date = cwdb_soup.find('div',attrs={'class':'view_date_sns'}).p.string
+        date = datetime.strptime(date,'%B %d, %Y')
+
+        # Create dictionary for story
+        story_dictionary = {'Story title':title, 'Date':date, 'Language': 'English', 'Author':'Republic of Korea  Cheong Wa Dae', 'URL':url}
+
+        # Create dataframe for story
+        story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
+
+        # Concat
+        df = pd.concat([df,story_dataframe])
+
+        # Find next story URL
+        next_url = cwdb_soup.find('ul',attrs={'class':'board_view_list'}).li.a['href']
+
+        # Set next url as url
+        url =  'https://english1.president.go.kr' + next_url
+
+        # Check if table fully updated
+        fully_updated = date_last_accessed > df['Date'].min()
+
+    return df
+
 # Define news_df_producer function
 def news_df_producer(date):
 
@@ -371,11 +514,23 @@ def news_df_producer(date):
     # Produce MOTIE PR DF
     motie_pr_data = motie_pr_df(date)
 
+    # Produce MFA df
+    mfa_df = rok_mfa(date)
+
+    # Produce CWD-B df
+    cwdb_df = cheong_wa_dae_briefings(date)
+
     # Concatenate DFs
     news_df = pd.concat([ROK_NSSC_PR_df,motie_photo_df])
 
     # Concatenate more DFs
     news_df = pd.concat([news_df ,motie_pr_data])
+
+    # Concatenate yet more DFs
+    news_df = pd.concat([news_df,mfa_df])
+
+    # and another DF....
+    news_df = pd.concat([news_df,cwdb_df])
 
     # Reset index
     news_df.reset_index(inplace = True)
