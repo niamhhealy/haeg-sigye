@@ -2,7 +2,7 @@
 from bs4 import BeautifulSoup
 
 # Import URL parser library
-import urllib2
+import urllib.request as urllib
 
 # Import Pandas
 import pandas as pd
@@ -23,7 +23,7 @@ def first_motie_photo_news_story(motie_photo_news_url):
     recent photo news piece.'''
 
     # Save HTML of MOTIE URL
-    motie_photo_news = urllib2.urlopen(motie_photo_news_url)
+    motie_photo_news = urllib.urlopen(motie_photo_news_url)
 
     # Save soup of MOTIE photo news page
     soup = BeautifulSoup(motie_photo_news, 'html.parser')
@@ -43,7 +43,7 @@ def motie_photo_news_story(story_url):
     and returns a dataframe containing key information about that story.'''
 
     # Save HTML of MOTIE story
-    MOTIE_photo_story = urllib2.urlopen(story_url)
+    MOTIE_photo_story = urllib.urlopen(story_url)
 
     # Save soup of MOTIE story
     soup = BeautifulSoup(MOTIE_photo_story, 'html.parser')
@@ -122,7 +122,7 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
     rok_nssc_url = 'http://www.nssc.go.kr/nssc/english/release/list.jsp'
 
     # Save HTML of ROK NSSC press releases
-    rok_nssc_pr = urllib2.urlopen(rok_nssc_url)
+    rok_nssc_pr = urllib.urlopen(rok_nssc_url)
 
     # Save soup of ROK NSSC press releases
     soup = BeautifulSoup(rok_nssc_pr, 'html.parser')
@@ -213,7 +213,7 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
     while fully_updated is False:
 
         # Save HTML of the press release we're looking at
-        pr_html = urllib2.urlopen(url)
+        pr_html = urllib.urlopen(url)
 
         # Collect press release soup
         press_release_soup = BeautifulSoup(pr_html, 'html.parser')
@@ -266,7 +266,7 @@ def first_MOTIE_pr(motie_pr_url):
     PR. '''
 
     # Save HTML of MOTIE URL
-    motie_photo_news = urllib2.urlopen(motie_pr_url)
+    motie_photo_news = urllib.urlopen(motie_pr_url)
 
     # Save soup of MOTIE photo news page
     soup = BeautifulSoup(motie_photo_news, 'html.parser')
@@ -285,7 +285,7 @@ def motie_pr(pr_url):
     ''' This function takes the URL of a MOTIE PR and returns key information about that PR.'''
 
     # Save HTML of MOTIE story
-    MOTIE_pr = urllib2.urlopen(pr_url)
+    MOTIE_pr = urllib.urlopen(pr_url)
 
     # Save soup of MOTIE story
     soup = BeautifulSoup(MOTIE_pr, 'html.parser')
@@ -370,7 +370,7 @@ def rok_mfa(date_last_accessed):
     table_fully_updated = False
 
     # Save HTML of MFA
-    mfa_pr = urllib2.urlopen(mfa_url)
+    mfa_pr = urllib.urlopen(mfa_url)
 
     # Save soup of MFA story
     soup = BeautifulSoup(mfa_pr, 'html.parser')
@@ -389,7 +389,7 @@ def rok_mfa(date_last_accessed):
     while table_fully_updated is False:
 
             # Save HTML of MFA
-            news_story = urllib2.urlopen(url)
+            news_story = urllib.urlopen(url)
 
             # Save soup of MFA story
             mfa_soup = BeautifulSoup(news_story, 'html.parser')
@@ -438,7 +438,7 @@ def rok_mfa(date_last_accessed):
 
 # Define Cheong Wa Dae briefings function
 def cheong_wa_dae_briefings(date_last_accessed):
-    ''' This functio takes the date the user last accessed the news and returns a df containing the latest
+    ''' This function takes the date the user last accessed the news and returns a df containing the latest
     briefings from the Cheong Wa Dae after that date.'''
 
     # Set url of briefings page
@@ -448,7 +448,7 @@ def cheong_wa_dae_briefings(date_last_accessed):
     table_fully_updated = False
 
     # Save HTML of CWD-B
-    cwdb_pr = urllib2.urlopen(cwdb_url)
+    cwdb_pr = urllib.urlopen(cwdb_url)
 
     # Save soup of CWD-B story
     soup = BeautifulSoup(cwdb_pr, 'html.parser')
@@ -468,7 +468,7 @@ def cheong_wa_dae_briefings(date_last_accessed):
     while table_fully_updated is False:
 
         # Save HTML of CWD-B
-        news_story = urllib2.urlopen(url)
+        news_story = urllib.urlopen(url)
 
         # Save soup of CWD-B
         cwdb_soup = BeautifulSoup(news_story, 'html.parser')
@@ -479,7 +479,7 @@ def cheong_wa_dae_briefings(date_last_accessed):
         # Find date
         date = cwdb_soup.find('div',attrs={'class':'view_date_sns'}).p.string
         date = datetime.strptime(date,'%B %d, %Y')
-        print 'Running CWD' + str(date)
+        print('Running CWD' + str(date))
 
         # Create dictionary for story
         story_dictionary = {'Story title':title, 'Date':date, 'Language': 'English', 'Author':'Republic of Korea  Cheong Wa Dae', 'URL':url}
@@ -511,17 +511,20 @@ def news_df_producer(date):
     # Produce MOTIE photo news DF
     motie_photo_df = produce_motie_df(date)
 
-    print 'motie pr time'
+    print('motie pr time')
+
     # Produce MOTIE PR DF
     motie_pr_data = motie_pr_df(date)
 
-    print 'now onto mfa'
+    print('now onto mfa')
     # Produce MFA df
     mfa_df = rok_mfa(date)
 
-    print 'ok starting CWD'
+    print('ok starting CWD')
     # Produce CWD-B df
     cwdb_df = cheong_wa_dae_briefings(date)
+
+    print("now it's speech time!")
 
     # Concatenate DFs
     news_df = pd.concat([ROK_NSSC_PR_df,motie_photo_df])
