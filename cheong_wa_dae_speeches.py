@@ -1,3 +1,21 @@
+# Import BeautifulSoup library
+from bs4 import BeautifulSoup
+
+# Import URL parser library
+import urllib.request as urllib
+
+# Import Pandas
+import pandas as pd
+
+# Import date time
+from datetime import datetime
+
+# Amend pandas settings
+pd.set_option("display.max_colwidth",1000)
+
+# Import Regex
+import re
+
 # Define Cheong Wa Dae briefings function
 def cheong_wa_dae_speeches(date_last_accessed):
     ''' This function takes the date the user last accessed the news and returns a df containing the latest
@@ -10,7 +28,7 @@ def cheong_wa_dae_speeches(date_last_accessed):
     table_fully_updated = False
 
     # Save HTML of CWD-B
-    cwdb_pr = urllib2.urlopen(cwds_url)
+    cwdb_pr = urllib.urlopen(cwds_url)
 
     # Save soup of CWD-S story
     soup = BeautifulSoup(cwdb_pr, 'html.parser')
@@ -30,7 +48,7 @@ def cheong_wa_dae_speeches(date_last_accessed):
     while table_fully_updated is False:
 
         # Save HTML of CWD-S
-        news_story = urllib2.urlopen(url)
+        news_story = urllib.urlopen(url)
 
         # Save soup of CWD-S
         cwdb_soup = BeautifulSoup(news_story, 'html.parser')
@@ -41,7 +59,7 @@ def cheong_wa_dae_speeches(date_last_accessed):
         # Find date
         date = cwdb_soup.find('div',attrs={'class':'view_date_sns'}).p.string
         date = datetime.strptime(date,'%B %d, %Y')
-        print 'Running CWD SPEECHES' + str(date)
+        print('Running CWD SPEECHES '+str(date))
 
         # Create dictionary for story
         story_dictionary = {'Story title':title, 'Date':date, 'Language': 'English', 'Author':'Republic of Korea  Cheong Wa Dae', 'URL':url}
@@ -61,3 +79,10 @@ def cheong_wa_dae_speeches(date_last_accessed):
         table_fully_updated = date_last_accessed > df['Date'].min()
 
     return df
+
+import time
+from datetime import date
+date = 'June 1, 2018'
+date_last_accessed = datetime.strptime(date,'%B %d, %Y')
+df = cheong_wa_dae_speeches(date_last_accessed)
+print (df)
