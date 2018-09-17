@@ -16,6 +16,10 @@ pd.set_option("display.max_colwidth",1000)
 # Import Regex
 import re
 
+# Import SSL/se
+import socket
+import ssl
+
 # Define first motie_photo_news_story function
 def first_motie_photo_news_story(motie_photo_news_url):
 
@@ -246,7 +250,7 @@ def produce_ROK_NSSC_PR_df(date_last_accessed):
         pr_df = pd.DataFrame(data = pr_data, index = [0])
 
         # Introduce dataframe for press release to existing dataframe
-        rok_nssc_pr_df = pd.concat([pr_df,rok_nssc_pr_df])
+        rok_nssc_pr_df = pd.concat([pr_df,rok_nssc_pr_df], sort=True)
 
         # Collect next URL to look-up - the html
         next_url_html = press_release_soup.find('td', attrs={'class':'next_article '}).contents[0]
@@ -338,7 +342,7 @@ def motie_pr_df(date_last_accessed):
     problematic_story_number = 622
 
     # create while loop to run if table not fully updated from newest stories
-    while fully_updated is False or last_story_number >= 622:
+    while fully_updated is False or int(last_story_number) >= 622:
 
         # save next news story number
         last_story_number = int(last_story_number) - 1
@@ -436,6 +440,77 @@ def rok_mfa(date_last_accessed):
 
     return df
 
+# Define Cheong Wa Dae speeches function
+def cheong_wa_dae_speeches(date_last_accessed):
+    ''' This function takes the date the user last accessed the news and returns a df containing the latest
+    speeches from the Cheong Wa Dae after that date.'''
+
+    # Set url of speeches page
+    cwds_url = 'https://english1.president.go.kr/BriefingSpeeches/Speeches'
+
+    # Create table_fully_updated variable
+    table_fully_updated = False
+
+    # Save HTML of CWD-B
+    cwdb_pr = urllib.urlopen(cwds_url, context=myssl)
+
+    # Save soup of CWD-S story
+    soup = BeautifulSoup(cwdb_pr, 'html.parser')
+
+    # Find first news story_url
+    link_junk = str(soup.find('div', attrs={'class':'sub_board_title'}).contents[1])
+    start_of_link =  link_junk.find('"')+1
+    end_of_link =  link_junk.find('"',start_of_link)
+    first_story = 'https://english1.president.go.kr' + link_junk[start_of_link:end_of_link]
+
+    # Set url as first story link
+    url = first_story
+    print (url)
+
+    # Create empty news df
+    df = pd.DataFrame(data=None)
+
+    while table_fully_updated is False:
+
+        # Save HTML of CWD-S
+        news_story = urllib.urlopen(url, context=myssl)
+
+        # Save soup of CWD-S
+        cwdb_soup = BeautifulSoup(news_story, 'html.parser')
+
+        # Find title
+        title = cwdb_soup.find('title').contents[0]
+
+        # Find date
+        date = cwdb_soup.find('div',attrs={'class':'view_date_sns'}).p.string
+        print (date)
+        date = datetime.strptime(date,'%B %d, %Y')
+        print('Running CWD SPEECHES '+str(date))
+
+        # Create dictionary for story
+        story_dictionary = {'Story title':title, 'Date':date, 'Language': 'English', 'Author':'Republic of Korea  Cheong Wa Dae', 'URL':url}
+
+        # Create dataframe for story
+        story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
+
+        # Concat
+        df = pd.concat([df,story_dataframe])
+
+        # Set next url as url
+        story_number = int(url[-2:])
+        story_number = story_number - 1
+        url = url[:-2] + str(story_number)
+
+        # Check if table fully updated
+        table_fully_updated = date_last_accessed > df['Date'].min()
+
+    return df
+
+# Create cheeky exception for cheong wa Dae
+myssl = ssl.create_default_context();
+myssl.check_hostname=False
+myssl.verify_mode=ssl.CERT_NONE
+
 # Define Cheong Wa Dae briefings function
 def cheong_wa_dae_briefings(date_last_accessed):
     ''' This function takes the date the user last accessed the news and returns a df containing the latest
@@ -448,7 +523,7 @@ def cheong_wa_dae_briefings(date_last_accessed):
     table_fully_updated = False
 
     # Save HTML of CWD-B
-    cwdb_pr = urllib.urlopen(cwdb_url)
+    cwdb_pr = urllib.urlopen(cwdb_url, context=myssl)
 
     # Save soup of CWD-B story
     soup = BeautifulSoup(cwdb_pr, 'html.parser')
@@ -468,7 +543,7 @@ def cheong_wa_dae_briefings(date_last_accessed):
     while table_fully_updated is False:
 
         # Save HTML of CWD-B
-        news_story = urllib.urlopen(url)
+        news_story = urllib.urlopen(url, context=myssl)
 
         # Save soup of CWD-B
         cwdb_soup = BeautifulSoup(news_story, 'html.parser')
@@ -500,70 +575,6 @@ def cheong_wa_dae_briefings(date_last_accessed):
 
     return df
 
-# Define Cheong Wa Dae briefings function
-def cheong_wa_dae_speeches(date_last_accessed):
-    ''' This function takes the date the user last accessed the news and returns a df containing the latest
-    speeches from the Cheong Wa Dae after that date.'''
-
-    # Set url of speeches page
-    cwds_url = 'https://english1.president.go.kr/BriefingSpeeches/Speeches'
-
-    # Create table_fully_updated variable
-    table_fully_updated = False
-
-    # Save HTML of CWD-B
-    cwdb_pr = urllib.urlopen(cwds_url)
-
-    # Save soup of CWD-S story
-    soup = BeautifulSoup(cwdb_pr, 'html.parser')
-
-    # Find first news story_url
-    link_junk = str(soup.find('div', attrs={'class':'sub_board_title'}).contents[1])
-    start_of_link =  link_junk.find('"')+1
-    end_of_link =  link_junk.find('"',start_of_link)
-    first_story = 'https://english1.president.go.kr' + link_junk[start_of_link:end_of_link]
-
-    # Set url as first story link
-    url = first_story
-
-    # Create empty news df
-    df = pd.DataFrame(data=None)
-
-    while table_fully_updated is False:
-
-        # Save HTML of CWD-S
-        news_story = urllib.urlopen(url)
-
-        # Save soup of CWD-S
-        cwdb_soup = BeautifulSoup(news_story, 'html.parser')
-
-        # Find title
-        title = cwdb_soup.find('title').contents[0]
-
-        # Find date
-        date = cwdb_soup.find('div',attrs={'class':'view_date_sns'}).p.string
-        date = datetime.strptime(date,'%B %d, %Y')
-        print('Running CWD SPEECHES '+str(date))
-
-        # Create dictionary for story
-        story_dictionary = {'Story title':title, 'Date':date, 'Language': 'English', 'Author':'Republic of Korea  Cheong Wa Dae', 'URL':url}
-
-        # Create dataframe for story
-        story_dataframe = pd.DataFrame(data = story_dictionary, index = [0])
-
-        # Concat
-        df = pd.concat([df,story_dataframe])
-
-        # Set next url as url
-        story_number = int(url[-2:])
-        story_number = story_number - 1
-        url = url[:-3] + str(story_number)
-
-        # Check if table fully updated
-        table_fully_updated = date_last_accessed > df['Date'].min()
-
-    return df
-
 # Define news_df_producer function
 def news_df_producer(date):
 
@@ -585,6 +596,7 @@ def news_df_producer(date):
     mfa_df = rok_mfa(date)
 
     print('ok starting CWD')
+
     # Produce CWD-B df
     cwdb_df = cheong_wa_dae_briefings(date)
 
